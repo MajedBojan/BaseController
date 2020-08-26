@@ -1,0 +1,51 @@
+<%="# frozen_string_literal: true
+
+class \u003C%=class_name%\u003EController \u003C V1::BaseController
+\u003C%= controller_powers -%\u003E
+
+  ## ------------------------------------------------------------ ##
+
+  # GET : /v1/\u003C%=file_name.pluralize%\u003E/
+  # Inherited from V1::BaseController
+  # def index; end
+
+  ## ------------------------------------------------------------ ##
+
+  # POST : /v1/\u003C%=file_name.pluralize%\u003E/
+  # Inherited from V1::BaseController
+  # def create; end
+
+  ## ------------------------------------------------------------ ##
+
+  # GET : /v1/\u003C%=file_name.pluralize%\u003E/:id
+  # Inherited from V1::BaseController
+  # def show; end
+
+  ## ------------------------------------------------------------ ##
+
+  # PUT : /v1/\u003C%=file_name.pluralize%\u003E/:id
+  # Inherited from V1::BaseController
+  # def update; end
+
+  ## ------------------------------------------------------------ ##
+
+  # DELETE : /v1/\u003C%=file_name.pluralize%\u003E/:id
+  # Inherited from V1::BaseController
+  # def destroy; end
+
+  ## ------------------------------------------------------------ ##
+
+  private
+
+  # Whitelist parameters
+  def \u003C%=file_name.singularize%\u003E_params
+    params.require(:\u003C%=model_name.downcase%\u003E).permit()
+  end
+
+  # Search filters
+  # def search_params; end
+
+  # Custom ordering and sorting
+  # def get_order; end
+end
+"%>
