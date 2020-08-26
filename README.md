@@ -7,7 +7,7 @@ rails new app \
   -d postgresql \
   --T \
   --api \
-  -m https://raw.githubusercontent.com/ali-sheiba/api_template/master/template.rb
+  -m https://raw.githubusercontent.com/MajedBojan/base_controller/master/template.rb
 ```
 
 
