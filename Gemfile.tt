@@ -8,15 +8,9 @@ gem 'pg'<%= gemfile_requirement('pg') %>
 gem 'puma'<%= gemfile_requirement('puma') %>
 gem 'rails', '~> <%= Rails.version %>'
 gem 'mini_magick', '~> 4.8'
-
-gem 'acts_as_api'
+gem 'jwt', '~> 2.2', '>= 2.2.1'
+gem 'fast_jsonapi'
 gem 'bcrypt', '~> 3.1.7'
-gem 'consul'
-<% if apply_devise? -%>
-gem 'devise'
-gem 'devise-i18n'
-gem 'devise-jwt', '~> 0.5.6'
-<% end -%>
 gem 'email_validator'
 gem 'enumerize'
 gem 'redis', '~> 4.0'
@@ -53,6 +47,9 @@ group :development, :test do
   gem 'pry-rails'
   gem 'rails-erd'
   gem 'rubocop', require: false
+  gem 'rubocop-packaging', require: false
+  gem 'rubocop-performance', require: false
+  gem 'rubocop-rails', require: false
 
 <% if apply_rspec? -%>
   gem 'database_cleaner'

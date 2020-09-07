@@ -1,9 +1,10 @@
 # frozen_string_literal: true
 
-class V1::ApiController < ApplicationController
+class V1::Admin::ApiController < ApplicationController
   include JsonResponders
   include ExceptionHandler
   include MissingData
+
   before_action :authenticate!
   before_action :set_locale
   require_power_check
@@ -12,12 +13,13 @@ class V1::ApiController < ApplicationController
 
   private
 
-  def authenticate_user!
+  def authenticate!
     return if missing_headers!('Authorization')
 
-    @current_user = Authentication.get(request.headers['Authorization'].split(' ').last)
+    @current_user = AuthenticateUser.get(request.headers['Authorization'].split(' ').last)
   end
 
+  # Set request locale
   def set_locale
     I18n.locale = params[:locale] || request.headers['locale'] || I18n.default_locale
   end

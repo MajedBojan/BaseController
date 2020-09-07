@@ -8,7 +8,7 @@ require 'fileutils'
 require 'shellwords'
 require 'tmpdir'
 
-RAILS_REQUIREMENT = '~> 5.2.0'
+RAILS_REQUIREMENT = '~> 6.0.3.2'
 
 def apply_template!
   assert_minimum_rails_version
@@ -53,32 +53,35 @@ def setup_envs
 end
 
 def setup_base
-  return unless apply_base?
+  if apply_base?
+    directory 'app/controllers/concerns'
+    directory 'app/controllers/v1', force: true
+    directory 'app/models'
+    directory 'config/locales', force: true
+    directory 'lib/generators'
+    environment "config.i18n.load_path += Dir[Rails.root.join('config', 'locales', '**', '*.{rb,yml}')]"
+    environment 'config.i18n.available_locales = [:en, :ar]'
 
-  directory 'app/controllers/concerns'
-  directory 'app/controllers/v1', force: true, exclude_pattern: /auth/
-  directory 'app/models'
-  directory 'config/locales', force: true
-  directory 'lib/generators'
-  environment "config.i18n.load_path += Dir[Rails.root.join('config', 'locales', '**', '*.{rb,yml}')]"
-  environment 'config.i18n.available_locales = [:en, :ar]'
-
-  insert_into_file 'config/routes.rb', before: /^end/ do
-    <<-RUBY
-  namespace :v1, defaults: { format: :json } do
-    # API Resources here
-  end
-    RUBY
+    insert_into_file 'config/routes.rb', before: /^end/ do
+      <<-RUBY
+      namespace :v1, defaults: { format: :json } do
+        # Admin API Resources here
+        namespace :admin, defaults: { format: :json } do
+          # Admin API Resources here
+        end
+      end
+      RUBY
+    end
   end
 end
 
 def setup_gems
   setup_bullet
   setup_erd
-  if apply_devise?
-    setup_devise
-    setup_devise_jwt
-  end
+  # if apply_devise?
+  #   setup_devise
+  #   setup_devise_jwt
+  # end
   setup_annotate
   setup_rspec if apply_rspec?
   setup_capistrano if apply_capistrano?
@@ -111,46 +114,46 @@ def setup_capistrano
   copy_file 'Capfile'
 end
 
-def setup_devise
-  generate 'devise:install'
-  gsub_file 'config/initializers/devise.rb', /#\s(config\.secret_key)\s=\s(.*)/, 'config.secret_key = Rails.application.credentials.secret_key_base'
-  insert_into_file 'config/environments/development.rb', " \n config.action_mailer.default_url_options = { host: 'localhost', port: 3000 }\n", before: /^end/
+# def setup_devise
+#   generate 'devise:install'
+#   gsub_file 'config/initializers/devise.rb', /#\s(config\.secret_key)\s=\s(.*)/, 'config.secret_key = Rails.application.credentials.secret_key_base'
+#   insert_into_file 'config/environments/development.rb', " \n config.action_mailer.default_url_options = { host: 'localhost', port: 3000 }\n", before: /^end/
 
-  generate 'devise', 'User'
-  generate 'devise:i18n:locale', 'ar'
+#   generate 'devise', 'User'
+#   generate 'devise:i18n:locale', 'ar'
 
-  # Copy Controllers
-  directory 'app/controllers/v1/auth'
-  copy_file 'app/lib/application_responder.rb'
+#   # Copy Controllers
+#   directory 'app/controllers/v1/auth'
+#   copy_file 'app/lib/application_responder.rb'
 
-  # Set BaseRoute
-  gsub_file 'config/initializers/devise.rb', "  # config.parent_controller = 'DeviseController'", '  config.parent_controller = \'V1::Auth::DeviseController\''
+#   # Set BaseRoute
+#   gsub_file 'config/initializers/devise.rb', "  # config.parent_controller = 'DeviseController'", '  config.parent_controller = \'V1::Auth::DeviseController\''
 
-  # Set Rouets
-  gsub_file 'config/routes.rb', 'devise_for :users' do
-    <<~RUBY
-      devise_for :users,
-          controllers: {
-            sessions: 'v1/auth/sessions',
-            registrations: 'v1/auth/registrations',
-            passwords: 'v1/auth/passwords'
-          },
-          path: 'v1/auth',
-          defaults: { format: :json },
-          path_names: { sign_in: 'login', sign_out: 'logout', registration: 'register' }
-    RUBY
-  end
-end
+#   # Set Rouets
+#   gsub_file 'config/routes.rb', 'devise_for :users' do
+#     <<~RUBY
+#       devise_for :users,
+#           controllers: {
+#             sessions: 'v1/auth/sessions',
+#             registrations: 'v1/auth/registrations',
+#             passwords: 'v1/auth/passwords'
+#           },
+#           path: 'v1/auth',
+#           defaults: { format: :json },
+#           path_names: { sign_in: 'login', sign_out: 'logout', registration: 'register' }
+#     RUBY
+#   end
+# end
 
-def setup_devise_jwt
-  inject_into_file 'config/initializers/devise.rb', before: /^  # ==> Controller configuration/ do
-    <<-RUBY
-    config.jwt do |jwt|
-      jwt.secret = Rails.application.credentials.secret_key_base
-      jwt.expiration_time = 1.day
-    end
-    RUBY
-  end
+# def setup_devise_jwt
+#   inject_into_file 'config/initializers/devise.rb', before: /^  # ==> Controller configuration/ do
+#     <<-RUBY
+#     config.jwt do |jwt|
+#       jwt.secret = Rails.application.credentials.secret_key_base
+#       jwt.expiration_time = 1.day
+#     end
+#     RUBY
+#   end
 
   # COPY jwt_warden_strategy
   copy_file 'config/initializers/jwt_warden_strategy.rb'
@@ -185,7 +188,7 @@ end
 
 def setup_rubocop
   copy_file '.rubocop.yml'
-  run 'rubocop --auto-correct'
+  run 'rubocop -a'
 end
 
 def setup_react
@@ -224,13 +227,13 @@ def apply_capistrano?
     =~ /^y(es)?/i
 end
 
-def apply_devise?
-  return @apply_devise if defined?(@apply_devise)
+# def apply_devise?
+#   return @apply_devise if defined?(@apply_devise)
 
-  @apply_devise = \
-    ask_with_default('Use Devise for user authentication?', :green, 'no') \
-    =~ /^y(es)?/i
-end
+#   @apply_devise = \
+#     ask_with_default('Use Devise for user authentication?', :green, 'no') \
+#     =~ /^y(es)?/i
+# end
 
 def apply_rspec?
   return @apply_rspec if defined?(@apply_rspec)

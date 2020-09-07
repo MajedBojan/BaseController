@@ -1,4 +1,5 @@
-# Rails Template for RESTFul API Project
+# Rails Template for RESTFul API Project 
+
 
 **WIP**
 
@@ -14,7 +15,6 @@ rails new app \
 ### This template includes:
 #### Gems:
 - Main Gems:
-  - `acts_as_api`
   - `bcrypt`
   - `consul`
   - `email_validator`
@@ -26,8 +26,6 @@ rails new app \
   - `rack`
   - `ransack`
   - `smart_error`
-  - `devise`
-  - `devise-jwt`
 - Development Gems Only:
   - `pry-rails`
   - `faker`
@@ -36,3 +34,5 @@ rails new app \
   - `shoulda`
   - `annotate`
 
+
+### Inspired by [Api template](https://github.com/ali-sheiba/api_template)
