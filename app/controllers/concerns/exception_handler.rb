@@ -7,7 +7,6 @@ module ExceptionHandler
     # Handle all exceptions
     rescue_from StandardError,                      with: :server_error!
     rescue_from I18n::InvalidLocale,                with: :i18n_invalid_locale!
-    rescue_from Consul::Powerless,                  with: :consul_powerless!
     rescue_from ActiveRecord::RecordNotFound,       with: :record_not_found!
   end
 
@@ -21,11 +20,6 @@ module ExceptionHandler
   # Handle I18n::InvalidLocale
   def i18n_invalid_locale!
     render_unauthorized(error: 1004, params: params[:locale])
-  end
-
-  # Handle Consul::Powerless
-  def consul_powerless!
-    render_forbidden
   end
 
   # Handle ActiveRecord::RecordNotFound
